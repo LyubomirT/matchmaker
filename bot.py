@@ -24,9 +24,9 @@ class ProfileModal(ui.Modal):
     def __init__(self):
         super().__init__(title="Profile Setup")
 
-        self.add_item(ui.InputText(label="Username"))
-        self.add_item(ui.InputText(label="Call Me Name"))
-        self.add_item(ui.InputText(label="Short Bio", style=discord.InputTextStyle.paragraph))
+        self.add_item(ui.InputText(label="Username", max_length=50))
+        self.add_item(ui.InputText(label="Call Me Name", max_length=50))
+        self.add_item(ui.InputText(label="Short Bio", style=discord.InputTextStyle.paragraph, max_length=512))
 
     async def callback(self, interaction: discord.Interaction):
         username = self.children[0].value
@@ -45,7 +45,7 @@ class LobbyModal(ui.Modal):
     def __init__(self):
         super().__init__(title="Create Lobby")
 
-        self.add_item(ui.InputText(label="Lobby Name"))
+        self.add_item(ui.InputText(label="Lobby Name", max_length=50))
         self.add_item(ui.InputText(label="Description", style=discord.InputTextStyle.paragraph))
 
     async def callback(self, interaction: discord.Interaction):
@@ -65,8 +65,7 @@ class LobbyModal(ui.Modal):
 
 async def job_autocomplete(ctx: discord.AutocompleteContext):
     jobs = db.jobs.find({'guild_id': ctx.interaction.guild.id})
-    return [job['name'] for job in jobs if 'name' in job]
-
+    return [job['name'] for job in jobs if 'name' in job and len(job['name']) <= 50]
 
 @bot.slash_command(name="profile", description="Setup your profile")
 async def profile(ctx):
@@ -194,6 +193,11 @@ async def createreq(ctx, lobby_name: str, job: Option(str, "Select a job", autoc
         await ctx.respond(embed=embed)
         return
 
+    if db.reqs.count_documents({'lobby_name': lobby_name, 'guild_id': ctx.guild.id}) >= 25:
+        embed = Embed(title="ReqS Limit Reached", description="This lobby has reached the maximum number of ReqSes (25).", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+
     db.reqs.insert_one({
         'lobby_name': lobby_name,
         'job': job,
@@ -258,16 +262,35 @@ async def uploadjobs(ctx):
             jobs = set(filter(None, map(str.strip, jobs_text.splitlines())))
 
             for job in jobs:
-                db.jobs.update_one(
-                    {'name': job, 'guild_id': interaction.guild.id},
-                    {'$set': {'name': job, 'guild_id': interaction.guild.id}},
-                    upsert=True
-                )
+                if len(job) <= 50:
+                    db.jobs.update_one(
+                        {'name': job, 'guild_id': interaction.guild.id},
+                        {'$set': {'name': job, 'guild_id': interaction.guild.id}},
+                        upsert=True
+                    )
             embed = Embed(title="Jobs Uploaded", description="The list of jobs has been uploaded and processed.", color=discord.Color.green())
             await interaction.response.send_message(embed=embed, ephemeral=True)
 
     await ctx.send_modal(JobUploadModal())
 
+@bot.slash_command(name="removelists", description="Upload a .txt file with the list of jobs to remove")
+async def removelists(ctx):
+    class JobRemoveModal(ui.Modal):
+        def __init__(self):
+            super().__init__(title="Remove Jobs")
+
+            self.add_item(ui.InputText(label="Jobs", style=discord.InputTextStyle.paragraph, placeholder="Paste jobs here, one per line."))
+
+        async def callback(self, interaction: discord.Interaction):
+            jobs_text = self.children[0].value
+            jobs = set(filter(None, map(str.strip, jobs_text.splitlines())))
+
+            for job in jobs:
+                db.jobs.delete_one({'name': job, 'guild_id': interaction.guild.id})
+            embed = Embed(title="Jobs Removed", description="The listed jobs have been removed.", color=discord.Color.red())
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    await ctx.send_modal(JobRemoveModal())
 
 @bot.slash_command(name="viewlobbystatus", description="View your current lobby status")
 async def viewlobbystatus(ctx):
