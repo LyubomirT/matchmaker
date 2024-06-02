@@ -292,6 +292,18 @@ async def removelists(ctx):
 
     await ctx.send_modal(JobRemoveModal())
 
+@bot.slash_command(name="viewjobs", description="View the list of available jobs in the server")
+async def viewjobs(ctx):
+    jobs = list(db.jobs.find({'guild_id': ctx.guild.id}))
+    if not jobs:
+        embed = Embed(title="No Jobs", description="There are no jobs currently available.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+
+    job_names = [job['name'] for job in jobs]
+    embed = Embed(title="Available Jobs", description="\n".join(job_names), color=discord.Color.blue())
+    await ctx.respond(embed=embed)
+
 @bot.slash_command(name="viewlobbystatus", description="View your current lobby status")
 async def viewlobbystatus(ctx):
     lobbies = list(db.lobbies.find({'members': ctx.author.id, 'guild_id': ctx.guild.id}))
