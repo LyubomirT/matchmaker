@@ -300,7 +300,7 @@ async def viewjobs(ctx):
         await ctx.respond(embed=embed)
         return
 
-    job_names = [job['name'] for job in jobs]
+    job_names = [job['name'] for job in jobs if 'name' in job]
     embed = Embed(title="Available Jobs", description="\n".join(job_names), color=discord.Color.blue())
     await ctx.respond(embed=embed)
 
