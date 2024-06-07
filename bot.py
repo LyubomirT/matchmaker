@@ -181,6 +181,14 @@ async def createreq(ctx, lobby_name: str, job: Option(str, "Select a job", autoc
 
 @bot.slash_command(name="removereqs", description="Remove a ReqS")
 async def removereq(ctx, lobby_name: str, job: Option(str, "Select a job", autocomplete=job_autocomplete)):
+    if not db.reqs.find_one({'lobby_name': lobby_name, 'job': job, 'creator_id': ctx.author.id, 'guild_id': ctx.guild.id}):
+        embed = Embed(title="ReqS Not Found", description="The ReqS you are trying to remove does not exist.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+    if not db.lobbies.find_one({'name': lobby_name, 'guild_id': ctx.guild.id}):
+        embed = Embed(title="Lobby Not Found", description="The lobby you are trying to remove a ReqS from does not exist.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
     db.reqs.delete_one({
         'lobby_name': lobby_name,
         'job': job,
