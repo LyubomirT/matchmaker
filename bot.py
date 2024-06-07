@@ -5,7 +5,7 @@ from pymongo import MongoClient
 import random
 import dotenv
 import os
-from modals import ProfileModal, LobbyModal, JobUploadModal
+from modals import ProfileModal, LobbyModal, JobUploadModal, JobRemoveModal
 from database import db
 
 dotenv.load_dotenv()
@@ -221,20 +221,6 @@ async def uploadjobs(ctx):
 
 @bot.slash_command(name="removelists", description="Upload a .txt file with the list of jobs to remove")
 async def removelists(ctx):
-    class JobRemoveModal(ui.Modal):
-        def __init__(self):
-            super().__init__(title="Remove Jobs")
-
-            self.add_item(ui.InputText(label="Jobs", style=discord.InputTextStyle.paragraph, placeholder="Paste jobs here, one per line."))
-
-        async def callback(self, interaction: discord.Interaction):
-            jobs_text = self.children[0].value
-            jobs = set(filter(None, map(str.strip, jobs_text.splitlines())))
-
-            for job in jobs:
-                db.jobs.delete_one({'name': job, 'guild_id': interaction.guild.id})
-            embed = Embed(title="Jobs Removed", description="The listed jobs have been removed.", color=discord.Color.red())
-            await interaction.response.send_message(embed=embed, ephemeral=True)
 
     await ctx.send_modal(JobRemoveModal())
 

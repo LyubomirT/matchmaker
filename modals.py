@@ -65,3 +65,18 @@ class JobUploadModal(ui.Modal):
                     )
             embed = Embed(title="Jobs Uploaded", description="The list of jobs has been uploaded and processed.", color=discord.Color.green())
             await interaction.response.send_message(embed=embed, ephemeral=True)
+
+class JobRemoveModal(ui.Modal):
+        def __init__(self):
+            super().__init__(title="Remove Jobs")
+
+            self.add_item(ui.InputText(label="Jobs", style=discord.InputTextStyle.paragraph, placeholder="Paste jobs here, one per line."))
+
+        async def callback(self, interaction: discord.Interaction):
+            jobs_text = self.children[0].value
+            jobs = set(filter(None, map(str.strip, jobs_text.splitlines())))
+
+            for job in jobs:
+                db.jobs.delete_one({'name': job, 'guild_id': interaction.guild.id})
+            embed = Embed(title="Jobs Removed", description="The listed jobs have been removed.", color=discord.Color.red())
+            await interaction.response.send_message(embed=embed, ephemeral=True)
