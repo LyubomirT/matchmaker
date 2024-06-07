@@ -29,7 +29,7 @@ class LobbyModal(ui.Modal):
         super().__init__(title="Create Lobby")
 
         self.add_item(ui.InputText(label="Lobby Name", max_length=50))
-        self.add_item(ui.InputText(label="Description", style=discord.InputTextStyle.paragraph))
+        self.add_item(ui.InputText(label="Description", style=discord.InputTextStyle.paragraph, max_length=512))
 
     async def callback(self, interaction: discord.Interaction):
         name = self.children[0].value
@@ -80,3 +80,22 @@ class JobRemoveModal(ui.Modal):
                 db.jobs.delete_one({'name': job, 'guild_id': interaction.guild.id})
             embed = Embed(title="Jobs Removed", description="The listed jobs have been removed.", color=discord.Color.red())
             await interaction.response.send_message(embed=embed, ephemeral=True)
+
+class ConfirmKickEveryoneModal(ui.Modal):
+    def __init__(self, id=None):
+        super().__init__(title="Are you sure? This action is irreversible.")
+        self.id = id
+
+        self.add_item(ui.InputText(label="Dummy", placeholder="This is a dummy input to make the modal work.", required=False))
+
+    async def callback(self, interaction: discord.Interaction):
+        lobby_id = self.id
+        # debug print the contents of the lobby
+        print(db.lobbies.find_one({'_id': lobby_id}))
+        # message all members that they have been kicked
+        for member in db.lobbies.find_one({'_id': lobby_id})['members']:
+            user = interaction.guild.get_member(member)
+            await user.send(f"You have been kicked from the lobby.")
+        db.lobbies.update_one({'_id': lobby_id}, {'$set': {'members': []}})
+        embed = Embed(title="Kicked Everyone", description="Everyone has been kicked from the lobby.", color=discord.Color.red())
+        await interaction.response.send_message(embed=embed, ephemeral=True)

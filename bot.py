@@ -5,7 +5,7 @@ from pymongo import MongoClient
 import random
 import dotenv
 import os
-from modals import ProfileModal, LobbyModal, JobUploadModal, JobRemoveModal
+from modals import ProfileModal, LobbyModal, JobUploadModal, JobRemoveModal, ConfirmKickEveryoneModal
 from database import db
 import asyncio
 
@@ -313,7 +313,7 @@ async def lobbyinfo(ctx, lobby_name: str):
     await ctx.respond(embed=embed)
 
 @bot.slash_command(name="blockuser", description="Block a user from a lobby")
-async def blockuser(ctx, lobby_name: str, member: discord.Member):
+async def blockuser(ctx, lobby_name: Option(str, "Select a lobby", autocomplete=discord.utils.basic_autocomplete(myLobbies_autocomplete)), member: discord.Member):
     lobby = db.lobbies.find_one
     if not lobby:
         embed = Embed(title="Lobby Not Found", description="The lobby you are trying to block the user from does not exist.", color=discord.Color.red())
@@ -344,7 +344,7 @@ async def blockuser(ctx, lobby_name: str, member: discord.Member):
     await ctx.respond(embed=embed)
 
 @bot.slash_command(name="unblockuser", description="Unblock a user from a lobby")
-async def unblockuser(ctx, lobby_name: str, member: discord.Member):
+async def unblockuser(ctx, lobby_name: Option(str, "Select a lobby", autocomplete=discord.utils.basic_autocomplete(myLobbies_autocomplete)), member: discord.Member):
     lobby = db.lobbies.find_one
     if not lobby:
         embed = Embed(title="Lobby Not Found", description="The lobby you are trying to unblock the user from does not exist.", color=discord.Color.red())
@@ -392,5 +392,46 @@ async def announce(ctx, lobby_name: Option(str, "Select a lobby", autocomplete=d
             asyncio.sleep(1)
         except discord.Forbidden:
             pass
+    
+@bot.slash_command(name="kickeveryone", description="Kick everyone from a lobby (DANGEROUS)")
+async def kickeveryone(ctx, lobby_name: Option(str, "Select a lobby", autocomplete=discord.utils.basic_autocomplete(myLobbies_autocomplete))):
+    lobby = db.lobbies.find_one({'name': lobby_name, 'guild_id': ctx.guild.id})
+    if not lobby:
+        embed = Embed(title="Lobby Not Found", description="The lobby you are trying to kick everyone from does not exist.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+    
+    if ctx.author.id != lobby['creator_id']:
+        embed = Embed(title="Permission Denied", description="You do not have permission to kick everyone from this lobby.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+
+    await ctx.send_modal(ConfirmKickEveryoneModal(lobby['_id']))
+
+@bot.slash_command(name="deletelobby", description="Delete a lobby")
+async def deletelobby(ctx, lobby_name: Option(str, "Select a lobby", autocomplete=discord.utils.basic_autocomplete(myLobbies_autocomplete))):
+    lobby = db.lobbies.find_one({'name': lobby_name, 'guild_id': ctx.guild.id})
+    if not lobby:
+        embed = Embed(title="Lobby Not Found", description="The lobby you are trying to delete does not exist.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+    
+    if ctx.author.id != lobby['creator_id']:
+        embed = Embed(title="Permission Denied", description="You do not have permission to delete this lobby.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+
+    db.lobbies.delete_one({'name': lobby_name, 'guild_id': ctx.guild.id})
+    embed = Embed(title="Lobby Deleted", description=f"Lobby **{lobby_name}** has been successfully deleted.", color=discord.Color.red())
+    # message all members that the lobby has been deleted
+    try:
+        for member in lobby['members']:
+            user = ctx.guild.get_member(member)
+            await user.send(f"The lobby **{lobby_name}** has been deleted.")
+    except:
+        pass
+    # also delete all ReqSes for this lobby
+    db.reqs.delete_many({'lobby_name': lobby_name, 'guild_id': ctx.guild.id})
+    await ctx.respond(embed=embed)
 
 bot.run(os.getenv('DISCORD_TOKEN'))
