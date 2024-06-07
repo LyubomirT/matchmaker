@@ -342,4 +342,28 @@ async def blockuser(ctx, lobby_name: str, member: discord.Member):
         embed.description += " (User has DMs disabled)"
     await ctx.respond(embed=embed)
 
+@bot.slash_command(name="unblockuser", description="Unblock a user from a lobby")
+async def unblockuser(ctx, lobby_name: str, member: discord.Member):
+    lobby = db.lobbies.find_one
+    if not lobby:
+        embed = Embed(title="Lobby Not Found", description="The lobby you are trying to unblock the user from does not exist.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+    
+    if ctx.author.id != lobby['creator_id']:
+        embed = Embed(title="Permission Denied", description="You do not have permission to unblock users from this lobby.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+    
+    db.lobbies.update_one(
+        {'name': lobby_name, 'guild_id': ctx.guild.id},
+        {'$pull': {'blocked_users': member.id}}
+    )
+    embed = Embed(title="User Unblocked", description=f"{member.mention} has been unblocked from the lobby **{lobby_name}**.", color=discord.Color.green())
+    try:
+        await member.send(f"You have been unblocked from the lobby **{lobby_name}**.")
+    except discord.Forbidden:
+        embed.description += " (User has DMs disabled)"
+    await ctx.respond(embed=embed)
+
 bot.run(os.getenv('DISCORD_TOKEN'))
