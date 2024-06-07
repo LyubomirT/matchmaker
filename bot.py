@@ -7,6 +7,7 @@ import dotenv
 import os
 from modals import ProfileModal, LobbyModal, JobUploadModal, JobRemoveModal
 from database import db
+import asyncio
 
 dotenv.load_dotenv()
 
@@ -367,27 +368,29 @@ async def unblockuser(ctx, lobby_name: str, member: discord.Member):
     await ctx.respond(embed=embed)
 
 @bot.slash_command(name="announce", description="Announce a message to all members in a lobby")
-async def announce(ctx, lobby_name: str, message: str):
+async def announce(ctx, lobby_name: Option(str, "Select a lobby", autocomplete=discord.utils.basic_autocomplete(myLobbies_autocomplete)), message: str):
     lobby = db.lobbies.find_one({'name': lobby_name, 'guild_id': ctx.guild.id})
     if not lobby:
         embed = Embed(title="Lobby Not Found", description="The lobby you are trying to announce a message to does not exist.", color=discord.Color.red())
         await ctx.respond(embed=embed)
         return
     
-    if ctx.author.id not in lobby['members']:
-        embed = Embed(title="Permission Denied", description="You are not a member of this lobby.", color=discord.Color.red())
+    if ctx.author.id not in lobby['members'] and ctx.author.id != lobby['creator_id']:
+        embed = Embed(title="Permission Denied", description="You do not have permission to announce a message to this lobby.", color=discord.Color.red())
         await ctx.respond(embed=embed)
         return
-    
-    for member_id in lobby['members']:
-        member = ctx.guild.get_member(member_id)
-        if member:
-            try:
-                await member.send(f"**Announcement from {ctx.author.display_name}:** {message}")
-            except discord.Forbidden:
-                pass
-    embed = Embed(title="Message Sent", description="Your message has been sent to all members in the lobby.", color=discord.Color.green())
-    embed.set_footer(text=f"If a member has DMs disabled, they will not receive the message.")
-    await ctx.respond(embed=embed)
+
+    members = [ctx.guild.get_member(member_id) for member_id in lobby['members']]
+    member_mentions = [member.mention for member in members if member]
+
+    embed = Embed(title=f"Announcement from {ctx.author}", description=message, color=discord.Color.blue())
+    embed.set_footer(text=f"If the user has DMs disabled, they will not receive this message.")
+    await ctx.respond(f"Announcement sent to {', '.join(member_mentions)}")
+    for member in members:
+        try:
+            await member.send(embed=embed)
+            asyncio.sleep(1)
+        except discord.Forbidden:
+            pass
 
 bot.run(os.getenv('DISCORD_TOKEN'))
