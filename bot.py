@@ -32,7 +32,7 @@ async def profile(ctx):
     await ctx.send_modal(ProfileModal())
 
 @bot.slash_command(name="setjobs", description="Add jobs to your profile")
-async def setjobs(ctx, job: Option(str, "Select a job", autocomplete=job_autocomplete)):
+async def setjobs(ctx, job: Option(str, "Select a job", autocomplete=discord.utils.basic_autocomplete(job_autocomplete))):
     db.profiles.update_one(
         {'user_id': ctx.author.id, 'guild_id': ctx.guild.id},
         {'$addToSet': {'jobs': job}},
@@ -42,7 +42,7 @@ async def setjobs(ctx, job: Option(str, "Select a job", autocomplete=job_autocom
     await ctx.respond(embed=embed)
 
 @bot.slash_command(name="removejob", description="Remove jobs from your profile")
-async def removejob(ctx, job: Option(str, "Select a job", autocomplete=job_autocomplete)):
+async def removejob(ctx, job: Option(str, "Select a job", autocomplete=discord.utils.basic_autocomplete(job_autocomplete))):
     db.profiles.update_one(
         {'user_id': ctx.author.id, 'guild_id': ctx.guild.id},
         {'$pull': {'jobs': job}}
@@ -79,7 +79,7 @@ async def createlobby(ctx):
     await ctx.send_modal(LobbyModal())
 
 @bot.slash_command(name="joinlobby", description="Join a lobby")
-async def joinlobby(ctx, lobby_name: str):
+async def joinlobby(ctx, lobby_name: Option(str, "Select a lobby", autocomplete=discord.utils.basic_autocomplete(myLobbies_autocomplete))):
     lobby = db.lobbies.find_one({'name': lobby_name, 'guild_id': ctx.guild.id})
     if not lobby:
         embed = Embed(title="Lobby Not Found", description="The lobby you are trying to join does not exist.", color=discord.Color.red())
@@ -158,7 +158,7 @@ async def kickfromlobby(ctx, lobby_name: str, member: discord.Member):
     await ctx.respond(embed=embed)
 
 @bot.slash_command(name="createreqs", description="Create a ReqS")
-async def createreq(ctx, lobby_name: str, job: Option(str, "Select a job", autocomplete=job_autocomplete)):
+async def createreq(ctx, lobby_name: str, job: Option(str, "Select a job", autocomplete=discord.utils.basic_autocomplete(job_autocomplete))):
     lobby = db.lobbies.find_one({'name': lobby_name, 'guild_id': ctx.guild.id})
     if not lobby:
         embed = Embed(title="Lobby Not Found", description="The lobby you are trying to create a ReqS for does not exist.", color=discord.Color.red())
@@ -180,7 +180,7 @@ async def createreq(ctx, lobby_name: str, job: Option(str, "Select a job", autoc
     await ctx.respond(embed=embed)
 
 @bot.slash_command(name="removereqs", description="Remove a ReqS")
-async def removereq(ctx, lobby_name: str, job: Option(str, "Select a job", autocomplete=job_autocomplete)):
+async def removereq(ctx, lobby_name: str, job: Option(str, "Select a job", autocomplete=discord.utils.basic_autocomplete(job_autocomplete))):
     if not db.reqs.find_one({'lobby_name': lobby_name, 'job': job, 'creator_id': ctx.author.id, 'guild_id': ctx.guild.id}):
         embed = Embed(title="ReqS Not Found", description="The ReqS you are trying to remove does not exist.", color=discord.Color.red())
         await ctx.respond(embed=embed)
