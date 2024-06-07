@@ -67,6 +67,17 @@ async def viewprofile(ctx, member: discord.Member = None):
     if profile:
         jobs = ", ".join(profile.get('jobs', []))
         status = profile.get('available', False)
+        # Check if user's jobs are still valid
+        valid_jobs = []
+        for job in profile.get('jobs', []):
+            if db.jobs.find_one({'name': job, 'guild_id': ctx.guild.id}):
+                valid_jobs.append(job)
+        # Update user's profile with valid jobs
+        db.profiles.update_one(
+            {'user_id': member.id, 'guild_id': ctx.guild.id},
+            {'$set': {'jobs': valid_jobs}}
+        )
+        jobs = ", ".join(valid_jobs)
         embed = Embed(title=f"{profile['username']}'s Profile", description=f"**Call Me:** {profile['call_me']}\n**Bio:** {profile['bio']}\n**Jobs:** {jobs}\n**Available:** {status}", color=discord.Color.blue())
         await ctx.respond(embed=embed)
     else:
@@ -260,6 +271,14 @@ async def uploadjobs(ctx):
         await ctx.respond(embed=embed)
         return
 
+    jobs = list(db.jobs.find({'guild_id': ctx.guild.id}))
+    job_names = [job['name'] for job in jobs if 'name' in job]
+    total_length = sum(len(job_name) for job_name in job_names)
+    if total_length >= 5000:
+        embed = Embed(title="Job Limit Exceeded", description="The list of jobs has reached the maximum character limit.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+
     await ctx.send_modal(JobUploadModal())
 
 @bot.slash_command(name="removelists", description="Upload a .txt file with the list of jobs to remove")
@@ -281,8 +300,12 @@ async def viewjobs(ctx):
         return
 
     job_names = [job['name'] for job in jobs if 'name' in job]
-    embed = Embed(title="Available Jobs", description="\n".join(job_names), color=discord.Color.blue())
-    await ctx.respond(embed=embed)
+    chunk_size = 1000
+    chunks = [job_names[i:i+chunk_size] for i in range(0, len(job_names), chunk_size)]
+
+    for chunk in chunks:
+        embed = Embed(title="Available Jobs", description="\n".join(chunk), color=discord.Color.blue())
+        await ctx.respond(embed=embed)
 
 @bot.slash_command(name="mylobbies", description="View all your current lobbies")
 async def viewlobbystatus(ctx):
