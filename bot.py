@@ -140,6 +140,11 @@ async def kickfromlobby(ctx, lobby_name: Option(str, "Select a lobby", autocompl
         embed = Embed(title="Lobby Not Found", description="The lobby you are trying to kick the member from does not exist.", color=discord.Color.red())
         await ctx.respond(embed=embed)
         return
+    
+    if member.id not in lobby['members']:
+        embed = Embed(title="Member Not Found", description="The member you are trying to kick is not in this lobby.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
 
     if ctx.author.id != lobby['creator_id']:
         embed = Embed(title="Permission Denied", description="You do not have permission to kick members from this lobby.", color=discord.Color.red())
