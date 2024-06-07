@@ -86,8 +86,20 @@ async def joinlobby(ctx, lobby_name: str):
         await ctx.respond(embed=embed)
         return
     
+    if ctx.author.id in lobby['members']:
+        embed = Embed(title="Already Joined", description="You are already a member of this lobby.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+    
     if ctx.author.id in lobby['blocked_users']:
         embed = Embed(title="Access Denied", description="You are blocked from this lobby.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+
+    # check if there is space (amount of members must not be higher than amount of reqs + 1)
+    reqs = db.reqs.count_documents({'lobby_name': lobby_name, 'guild_id': ctx.guild.id})
+    if len(lobby['members']) >= reqs + 1:
+        embed = Embed(title="Lobby Full", description="This lobby is already full.", color=discord.Color.red())
         await ctx.respond(embed=embed)
         return
 
