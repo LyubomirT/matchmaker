@@ -33,6 +33,8 @@ async def profile(ctx):
 
 @bot.slash_command(name="setjobs", description="Add jobs to your profile")
 async def setjobs(ctx, job: Option(str, "Select a job", autocomplete=discord.utils.basic_autocomplete(job_autocomplete))):
+    if not db.jobs.find_one({'name': job, 'guild_id': ctx.guild.id}):
+        embed = Embed(title="Job Not Found", description="The job you are trying to add does not exist or is not set up in the server.", color=discord.Color.red())
     db.profiles.update_one(
         {'user_id': ctx.author.id, 'guild_id': ctx.guild.id},
         {'$addToSet': {'jobs': job}},
@@ -43,6 +45,11 @@ async def setjobs(ctx, job: Option(str, "Select a job", autocomplete=discord.uti
 
 @bot.slash_command(name="removejob", description="Remove jobs from your profile")
 async def removejob(ctx, job: Option(str, "Select a job", autocomplete=discord.utils.basic_autocomplete(job_autocomplete))):
+    if not db.jobs.find_one({'name': job, 'guild_id': ctx.guild.id}):
+        embed = Embed(title="Job Not Found", description="The job you are trying to remove does not exist or is not set up in the server.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+
     db.profiles.update_one(
         {'user_id': ctx.author.id, 'guild_id': ctx.guild.id},
         {'$pull': {'jobs': job}}
