@@ -181,6 +181,11 @@ async def createreq(ctx, lobby_name: Option(str, "Select a lobby", autocomplete=
         embed = Embed(title="ReqS Limit Reached", description="This lobby has reached the maximum number of ReqSes (25).", color=discord.Color.red())
         await ctx.respond(embed=embed)
         return
+    
+    if not db.jobs.find_one({'name': job, 'guild_id': ctx.guild.id}):
+        embed = Embed(title="Job Not Found", description="The job you are trying to create a ReqS for does not exist or is not set up in the server.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
 
     db.reqs.insert_one({
         'lobby_name': lobby_name,
