@@ -186,6 +186,11 @@ async def launch(ctx, lobby_name: str):
         await ctx.respond(embed=embed)
         return
     
+    if ctx.author.id != lobby['creator_id']:
+        embed = Embed(title="Permission Denied", description="You do not have permission to launch this lobby.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+    
     reqs = list(db.reqs.find({'lobby_name': lobby_name, 'guild_id': ctx.guild.id}))
     if len(reqs) == 0:
         embed = Embed(title="No ReqSes", description="No ReqSes found for this lobby.", color=discord.Color.red())
