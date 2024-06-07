@@ -316,6 +316,20 @@ async def viewlobbystatus(ctx):
     for lobby in lobbies:
         lobby_descriptions.append(f"**{lobby['name']}** - {lobby['description']}")
     embed = Embed(title="Current Lobbies", description="\n".join(lobby_descriptions), color=discord.Color.blue())
+    await ctx.respond(embed=embed) 
+
+@bot.slash_command(name="lobbyinfo", description="View information about a lobby (and its members)")
+async def lobbyinfo(ctx, lobby_name: str):
+    lobby = db.lobbies.find_one({'name': lobby_name, 'guild_id': ctx.guild.id})
+    if not lobby:
+        embed = Embed(title="Lobby Not Found", description="The lobby you are trying to view does not exist.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+    
+    members = [ctx.guild.get_member(member_id) for member_id in lobby['members']]
+    owner = ctx.guild.get_member(lobby['creator_id'])
+    member_mentions = [member.mention for member in members if member]
+    embed = Embed(title=f"{lobby_name} Information", description=f"**Description:** {lobby['description']}\n**Members:** {', '.join(member_mentions)}\n**Owner:** {owner.mention}", color=discord.Color.blue())
     await ctx.respond(embed=embed)
 
 bot.run(os.getenv('DISCORD_TOKEN'))
