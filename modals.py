@@ -50,7 +50,7 @@ class JobUploadModal(ui.Modal):
         def __init__(self):
             super().__init__(title="Upload Jobs")
 
-            self.add_item(ui.InputText(label="Jobs", style=discord.InputTextStyle.paragraph, placeholder="Paste jobs here, one per line."))
+            self.add_item(ui.InputText(label="Jobs", style=discord.InputTextStyle.paragraph, placeholder="Paste jobs here, one per line.", max_length=1000))
 
         async def callback(self, interaction: discord.Interaction):
             jobs_text = self.children[0].value

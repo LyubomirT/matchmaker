@@ -299,7 +299,7 @@ async def viewlobbystatus(ctx):
     await ctx.respond(embed=embed) 
 
 @bot.slash_command(name="lobbyinfo", description="View information about a lobby (and its members)")
-async def lobbyinfo(ctx, lobby_name: str):
+async def lobbyinfo(ctx, lobby_name: Option(str, "Select a lobby", autocomplete=discord.utils.basic_autocomplete(myLobbies_autocomplete))):
     lobby = db.lobbies.find_one({'name': lobby_name, 'guild_id': ctx.guild.id})
     if not lobby:
         embed = Embed(title="Lobby Not Found", description="The lobby you are trying to view does not exist.", color=discord.Color.red())
