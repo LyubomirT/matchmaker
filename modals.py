@@ -45,3 +45,23 @@ class LobbyModal(ui.Modal):
         })
         embed = Embed(title="Lobby Created", description=f"Lobby **{name}** has been successfully created!", color=discord.Color.green())
         await interaction.response.send_message(embed=embed, ephemeral=True)
+
+class JobUploadModal(ui.Modal):
+        def __init__(self):
+            super().__init__(title="Upload Jobs")
+
+            self.add_item(ui.InputText(label="Jobs", style=discord.InputTextStyle.paragraph, placeholder="Paste jobs here, one per line."))
+
+        async def callback(self, interaction: discord.Interaction):
+            jobs_text = self.children[0].value
+            jobs = set(filter(None, map(str.strip, jobs_text.splitlines())))
+
+            for job in jobs:
+                if len(job) <= 50:
+                    db.jobs.update_one(
+                        {'name': job, 'guild_id': interaction.guild.id},
+                        {'$set': {'name': job, 'guild_id': interaction.guild.id}},
+                        upsert=True
+                    )
+            embed = Embed(title="Jobs Uploaded", description="The list of jobs has been uploaded and processed.", color=discord.Color.green())
+            await interaction.response.send_message(embed=embed, ephemeral=True)

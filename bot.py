@@ -5,7 +5,7 @@ from pymongo import MongoClient
 import random
 import dotenv
 import os
-from modals import ProfileModal, LobbyModal
+from modals import ProfileModal, LobbyModal, JobUploadModal
 from database import db
 
 dotenv.load_dotenv()
@@ -216,25 +216,6 @@ async def launch(ctx, lobby_name: str):
 
 @bot.slash_command(name="uploadjobs", description="Upload a .txt file with the list of available jobs")
 async def uploadjobs(ctx):
-    class JobUploadModal(ui.Modal):
-        def __init__(self):
-            super().__init__(title="Upload Jobs")
-
-            self.add_item(ui.InputText(label="Jobs", style=discord.InputTextStyle.paragraph, placeholder="Paste jobs here, one per line."))
-
-        async def callback(self, interaction: discord.Interaction):
-            jobs_text = self.children[0].value
-            jobs = set(filter(None, map(str.strip, jobs_text.splitlines())))
-
-            for job in jobs:
-                if len(job) <= 50:
-                    db.jobs.update_one(
-                        {'name': job, 'guild_id': interaction.guild.id},
-                        {'$set': {'name': job, 'guild_id': interaction.guild.id}},
-                        upsert=True
-                    )
-            embed = Embed(title="Jobs Uploaded", description="The list of jobs has been uploaded and processed.", color=discord.Color.green())
-            await interaction.response.send_message(embed=embed, ephemeral=True)
 
     await ctx.send_modal(JobUploadModal())
 
