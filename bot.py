@@ -304,9 +304,9 @@ async def viewjobs(ctx):
     embed = Embed(title="Available Jobs", description="\n".join(job_names), color=discord.Color.blue())
     await ctx.respond(embed=embed)
 
-@bot.slash_command(name="viewlobbystatus", description="View your current lobby status")
+@bot.slash_command(name="mylobbies", description="View all your current lobbies")
 async def viewlobbystatus(ctx):
-    lobbies = list(db.lobbies.find({'members': ctx.author.id, 'guild_id': ctx.guild.id}))
+    lobbies = list(db.lobbies.find({'$or': [{'members': ctx.author.id}, {'creator_id': ctx.author.id}], 'guild_id': ctx.guild.id}))
     if not lobbies:
         embed = Embed(title="No Lobbies", description="You are not currently in any lobbies.", color=discord.Color.red())
         await ctx.respond(embed=embed)
