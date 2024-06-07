@@ -311,4 +311,35 @@ async def lobbyinfo(ctx, lobby_name: str):
     embed = Embed(title=f"{lobby_name} Information", description=f"**Description:** {lobby['description']}\n**Members:** {', '.join(member_mentions)}\n**Owner:** {owner.mention}", color=discord.Color.blue())
     await ctx.respond(embed=embed)
 
+@bot.slash_command(name="blockuser", description="Block a user from a lobby")
+async def blockuser(ctx, lobby_name: str, member: discord.Member):
+    lobby = db.lobbies.find_one
+    if not lobby:
+        embed = Embed(title="Lobby Not Found", description="The lobby you are trying to block the user from does not exist.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+    
+    if ctx.author.id != lobby['creator_id']:
+        embed = Embed(title="Permission Denied", description="You do not have permission to block users from this lobby.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+    
+    db.lobbies.update_one(
+        {'name': lobby_name, 'guild_id': ctx.guild.id},
+        {'$addToSet': {'blocked_users': member.id}}
+    )
+
+    # also remove the user from the lobby
+    db.lobbies.update_one(
+        {'name': lobby_name, 'guild_id': ctx.guild.id},
+        {'$pull': {'members': member.id}}
+    )
+
+    embed = Embed(title="User Blocked", description=f"{member.mention} has been blocked from the lobby **{lobby_name}**.", color=discord.Color.red())
+    try:
+        await member.send(f"You have been blocked from the lobby **{lobby_name}**.")
+    except discord.Forbidden:
+        embed.description += " (User has DMs disabled)"
+    await ctx.respond(embed=embed)
+
 bot.run(os.getenv('DISCORD_TOKEN'))
