@@ -366,4 +366,28 @@ async def unblockuser(ctx, lobby_name: str, member: discord.Member):
         embed.description += " (User has DMs disabled)"
     await ctx.respond(embed=embed)
 
+@bot.slash_command(name="announce", description="Announce a message to all members in a lobby")
+async def announce(ctx, lobby_name: str, message: str):
+    lobby = db.lobbies.find_one({'name': lobby_name, 'guild_id': ctx.guild.id})
+    if not lobby:
+        embed = Embed(title="Lobby Not Found", description="The lobby you are trying to announce a message to does not exist.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+    
+    if ctx.author.id not in lobby['members']:
+        embed = Embed(title="Permission Denied", description="You are not a member of this lobby.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+    
+    for member_id in lobby['members']:
+        member = ctx.guild.get_member(member_id)
+        if member:
+            try:
+                await member.send(f"**Announcement from {ctx.author.display_name}:** {message}")
+            except discord.Forbidden:
+                pass
+    embed = Embed(title="Message Sent", description="Your message has been sent to all members in the lobby.", color=discord.Color.green())
+    embed.set_footer(text=f"If a member has DMs disabled, they will not receive the message.")
+    await ctx.respond(embed=embed)
+
 bot.run(os.getenv('DISCORD_TOKEN'))
