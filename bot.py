@@ -236,11 +236,21 @@ async def launch(ctx, lobby_name: str):
 
 @bot.slash_command(name="uploadjobs", description="Upload a .txt file with the list of available jobs")
 async def uploadjobs(ctx):
+    # if not the server owner, return
+    if ctx.author.id != ctx.guild.owner_id:
+        embed = Embed(title="Permission Denied", description="You do not have permission to upload jobs (only the server owner can).", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
 
     await ctx.send_modal(JobUploadModal())
 
 @bot.slash_command(name="removelists", description="Upload a .txt file with the list of jobs to remove")
 async def removelists(ctx):
+    # if not the server owner, return
+    if ctx.author.id != ctx.guild.owner_id:
+        embed = Embed(title="Permission Denied", description="You do not have permission to remove jobs (only the server owner can).", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
 
     await ctx.send_modal(JobRemoveModal())
 
