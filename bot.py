@@ -463,4 +463,11 @@ async def deletelobby(ctx, lobby_name: Option(str, "Select a lobby", autocomplet
     db.reqs.delete_many({'lobby_name': lobby_name, 'guild_id': ctx.guild.id})
     await ctx.respond(embed=embed)
 
+# add a listener for when the bot is ready
+@bot.event
+async def on_ready():
+    greenansi = "\033[92m"
+    resetansi = "\033[0m"
+    print(f"{greenansi}Bot is ready!{resetansi}")
+
 bot.run(os.getenv('DISCORD_TOKEN'))
