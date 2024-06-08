@@ -69,7 +69,12 @@ async def viewprofile(ctx, member: discord.Member = None):
             {'$set': {'jobs': valid_jobs}}
         )
         jobs = ", ".join(valid_jobs)
-        embed = Embed(title=f"{profile['username']}'s Profile", description=f"**Call Me:** {profile['call_me']}\n**Bio:** {profile['bio']}\n**Jobs:** {jobs}\n**Available:** {status}", color=discord.Color.blue())
+        embed = Embed(title=f"{profile['username']}'s Profile", color=discord.Color.blue())
+        embed.set_thumbnail(url=member.avatar_url)
+        embed.add_field(name="Call Me", value=profile['call_me'], inline=False)
+        embed.add_field(name="Bio", value=profile['bio'], inline=False)
+        embed.add_field(name="Jobs", value=jobs, inline=False)
+        embed.add_field(name="Available", value="Yes" if status else "No", inline=False)
         await ctx.respond(embed=embed)
     else:
         embed = Embed(title="Profile Not Found", description="The profile you are looking for does not exist.", color=discord.Color.red())
