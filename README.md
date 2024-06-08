@@ -13,6 +13,10 @@ Welcome to Orangery Matchmaker! We're a Discord bot dedicated to helping collabo
 - **Joining Lobbies**: Join a lobby if there are available slots and you have the required skills using the `/joinlobby` command.
 - **Activity Tracking**: We track user activity and provide a leaderboard of the most active users in the server.
 
+## 🚀 Invite the bot!
+
+You can invite the bot to your server using [this link](https://discord.com/oauth2/authorize?client_id=1246720080579133471&permissions=8&integration_type=0&scope=bot).
+
 ## 🛠️ Setup
 
 1. Clone the repository.
