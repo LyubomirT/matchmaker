@@ -82,6 +82,9 @@ async def viewprofile(ctx, member: discord.Member = None):
         embed.add_field(name="Bio", value=profile['bio'], inline=False)
         embed.add_field(name="Jobs", value=jobs, inline=False)
         embed.add_field(name="Available", value="Yes" if status else "No", inline=False)
+        activityrank = db.messages.find_one({'user_id': member.id, 'guild_id': ctx.guild.id})
+        if activityrank:
+            embed.add_field(name="Message Count", value=activityrank['message_count'], inline=False)
         await ctx.respond(embed=embed)
     else:
         embed = Embed(title="Profile Not Found", description="The profile you are looking for does not exist.", color=discord.Color.red())
@@ -469,5 +472,47 @@ async def on_ready():
     greenansi = "\033[92m"
     resetansi = "\033[0m"
     print(f"{greenansi}Bot is ready!{resetansi}")
+
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+    # init the table if it doesn't exist
+    if 'messages' not in db.list_collection_names():
+        db.create_collection('messages')
+    # here we add the amount of messages (not the content) to the database (per-user on a per-guild basis)
+    db.messages.update_one(
+        {'user_id': message.author.id, 'guild_id': message.guild.id},
+        {'$inc': {'message_count': 1}},
+        upsert=True
+    )
+
+@bot.slash_command(name="messagecount", description="Get the amount of messages you've sent in this server")
+async def messagecount(ctx, member: discord.Member = None):
+    if member is None:
+        member = ctx.author
+    message_count = db.messages.find_one({'user_id': member.id, 'guild_id': ctx.guild.id})
+    if message_count:
+        embed = Embed(title="Message Count", description=f"{member.mention} has sent {message_count['message_count']} messages in this server.", color=discord.Color.blue())
+        await ctx.respond(embed=embed)
+    else:
+        embed = Embed(title="Message Count", description=f"{member.mention} has not sent any messages in this server.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+
+@bot.slash_command(name="activityleaderboard", description="Get the top 10 most active users in this server")
+async def activityleaderboard(ctx):
+    message_counts = list(db.messages.find({'guild_id': ctx.guild.id}).sort('message_count', -1).limit(10))
+    if not message_counts:
+        embed = Embed(title="Activity Leaderboard", description="There are no message counts available for this server.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+
+    leaderboard = []
+    for count in message_counts:
+        user = ctx.guild.get_member(count['user_id'])
+        if user:
+            leaderboard.append(f"{user.mention} - {count['message_count']} messages")
+    embed = Embed(title="Activity Leaderboard", description="\n".join(leaderboard), color=discord.Color.blue())
+    await ctx.respond(embed=embed)
 
 bot.run(os.getenv('DISCORD_TOKEN'))
