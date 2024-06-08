@@ -273,7 +273,7 @@ async def launch(ctx, lobby_name: Option(str, "Select a lobby", autocomplete=dis
             await ctx.respond(f"Could not find member with ID: {member_id}")
 
 @bot.slash_command(name="uploadjobs", description="Upload a .txt file with the list of available jobs")
-async def uploadjobs(ctx, file: discord.File):
+async def uploadjobs(ctx, file: discord.Attachment):
     # if not the server owner, return
     if ctx.author.id != ctx.guild.owner_id:
         embed = Embed(title="Permission Denied", description="You do not have permission to upload jobs (only the server owner can).", color=discord.Color.red())
@@ -307,7 +307,7 @@ async def uploadjobs(ctx, file: discord.File):
     await ctx.respond(embed=embed)
 
 @bot.slash_command(name="removelists", description="Upload a .txt file with the list of jobs to remove")
-async def removelists(ctx, file: discord.File):
+async def removelists(ctx, file: discord.Attachment):
     # if not the server owner, return
     if ctx.author.id != ctx.guild.owner_id:
         embed = Embed(title="Permission Denied", description="You do not have permission to remove jobs (only the server owner can).", color=discord.Color.red())
