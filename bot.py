@@ -235,6 +235,7 @@ async def removereq(ctx, lobby_name: Option(str, "Select a lobby", autocomplete=
 
 @bot.slash_command(name="launch", description="Launch a lobby")
 async def launch(ctx, lobby_name: Option(str, "Select a lobby", autocomplete=discord.utils.basic_autocomplete(myLobbies_autocomplete))):
+    await ctx.defer()
     lobby = db.lobbies.find_one({'name': lobby_name, 'guild_id': ctx.guild.id})
     if not lobby:
         embed = Embed(title="Lobby Not Found", description="The lobby you are trying to launch does not exist.", color=discord.Color.red())
@@ -274,6 +275,7 @@ async def launch(ctx, lobby_name: Option(str, "Select a lobby", autocomplete=dis
 
 @bot.slash_command(name="uploadjobs", description="Upload a .txt file with the list of available jobs")
 async def uploadjobs(ctx, file: discord.Attachment):
+    await ctx.defer()
     # if not the server owner, return
     if ctx.author.id != ctx.guild.owner_id:
         embed = Embed(title="Permission Denied", description="You do not have permission to upload jobs (only the server owner can).", color=discord.Color.red())
@@ -294,7 +296,12 @@ async def uploadjobs(ctx, file: discord.Attachment):
         await ctx.respond(embed=embed)
         return
     
-    jobs_text = file.fp.read().decode('utf-8')
+    jobs_text = await file.read()
+    jobs_text = jobs_text.decode('utf-8')
+    # remove the contents of the file from the end if there are more than 1000 characters (remove full lines to avoid partial jobs, until the length is less than 1000)
+    while len(jobs_text) > 2000:
+        # remove the last line
+        jobs_text = jobs_text[:jobs_text.rfind('\n')]
     jobs = set(filter(None, map(str.strip, jobs_text.splitlines())))
     for job in jobs:
         if len(job) <= 50:
@@ -308,6 +315,7 @@ async def uploadjobs(ctx, file: discord.Attachment):
 
 @bot.slash_command(name="removelists", description="Upload a .txt file with the list of jobs to remove")
 async def removelists(ctx, file: discord.Attachment):
+    await ctx.defer()
     # if not the server owner, return
     if ctx.author.id != ctx.guild.owner_id:
         embed = Embed(title="Permission Denied", description="You do not have permission to remove jobs (only the server owner can).", color=discord.Color.red())
@@ -320,7 +328,12 @@ async def removelists(ctx, file: discord.Attachment):
         await ctx.respond(embed=embed)
         return
     
-    jobs_text = file.fp.read().decode('utf-8')
+    jobs_text = await file.read()
+    jobs_text = jobs_text.decode('utf-8')
+    # remove the contents of the file from the end if there are more than 1000 characters (remove full lines to avoid partial jobs, until the length is less than 1000)
+    while len(jobs_text) > 2000:
+        # remove the last line
+        jobs_text = jobs_text[:jobs_text.rfind('\n')]
     jobs = set(filter(None, map(str.strip, jobs_text.splitlines())))
     for job in jobs:
         db.jobs.delete_one({'name': job, 'guild_id': ctx.guild.id})
