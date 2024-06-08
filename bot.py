@@ -273,7 +273,7 @@ async def launch(ctx, lobby_name: Option(str, "Select a lobby", autocomplete=dis
             await ctx.respond(f"Could not find member with ID: {member_id}")
 
 @bot.slash_command(name="uploadjobs", description="Upload a .txt file with the list of available jobs")
-async def uploadjobs(ctx):
+async def uploadjobs(ctx, file: discord.File):
     # if not the server owner, return
     if ctx.author.id != ctx.guild.owner_id:
         embed = Embed(title="Permission Denied", description="You do not have permission to upload jobs (only the server owner can).", color=discord.Color.red())
@@ -287,18 +287,45 @@ async def uploadjobs(ctx):
         embed = Embed(title="Job Limit Exceeded", description="The list of jobs has reached the maximum character limit.", color=discord.Color.red())
         await ctx.respond(embed=embed)
         return
-
-    await ctx.send_modal(JobUploadModal())
+    
+    # if not txt file, return
+    if file.filename.split('.')[-1] != 'txt':
+        embed = Embed(title="Invalid File Type", description="You can only upload .txt files.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+    
+    jobs_text = file.fp.read().decode('utf-8')
+    jobs = set(filter(None, map(str.strip, jobs_text.splitlines())))
+    for job in jobs:
+        if len(job) <= 50:
+            db.jobs.update_one(
+                {'name': job, 'guild_id': ctx.guild.id},
+                {'$set': {'name': job, 'guild_id': ctx.guild.id}},
+                upsert=True
+            )
+    embed = Embed(title="Jobs Uploaded", description="The list of jobs has been uploaded and processed.", color=discord.Color.green())
+    await ctx.respond(embed=embed)
 
 @bot.slash_command(name="removelists", description="Upload a .txt file with the list of jobs to remove")
-async def removelists(ctx):
+async def removelists(ctx, file: discord.File):
     # if not the server owner, return
     if ctx.author.id != ctx.guild.owner_id:
         embed = Embed(title="Permission Denied", description="You do not have permission to remove jobs (only the server owner can).", color=discord.Color.red())
         await ctx.respond(embed=embed)
         return
-
-    await ctx.send_modal(JobRemoveModal())
+    
+    # if not txt file, return
+    if file.filename.split('.')[-1] != 'txt':
+        embed = Embed(title="Invalid File Type", description="You can only upload .txt files.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+    
+    jobs_text = file.fp.read().decode('utf-8')
+    jobs = set(filter(None, map(str.strip, jobs_text.splitlines())))
+    for job in jobs:
+        db.jobs.delete_one({'name': job, 'guild_id': ctx.guild.id})
+    embed = Embed(title="Jobs Removed", description="The listed jobs have been removed.", color=discord.Color.red())
+    await ctx.respond(embed=embed)
 
 @bot.slash_command(name="viewjobs", description="View the list of available jobs in the server")
 async def viewjobs(ctx):
