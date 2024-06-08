@@ -9,6 +9,8 @@ from modals import ProfileModal, LobbyModal, JobUploadModal, JobRemoveModal, Con
 from database import db
 import asyncio
 from autocompletes import job_autocomplete, myLobbies_autocomplete
+from helpfile import helpstr
+
 
 dotenv.load_dotenv()
 
@@ -18,6 +20,11 @@ intents.typing = False
 intents.presences = True
 intents.members = True
 bot = commands.Bot(command_prefix='/', intents=intents)
+
+@bot.slash_command(name="help", description="Get help with the bot")
+async def help(ctx):
+    embed = Embed(title="Matchmaker Bot Help", description=helpstr, color=discord.Color.blue())
+    await ctx.respond(embed=embed)
 
 @bot.slash_command(name="profile", description="Setup your profile")
 async def profile(ctx):
