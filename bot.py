@@ -255,7 +255,10 @@ async def launch(ctx, lobby_name: Option(str, "Select a lobby", autocomplete=dis
         if member:
             embed = Embed(title="Member Matched", description=f"{member.mention} has been matched for job **{job}** in lobby **{lobby_name}**.", color=discord.Color.green())
             await ctx.respond(embed=embed)
-            await member.send(f"You have been matched for job **{job}** in lobby **{lobby_name}**.")
+            try:
+                await member.send(f"You have been matched for job **{job}** in lobby **{lobby_name}**.")
+            except discord.Forbidden:
+                await ctx.respond("I couldn't send a message to the matched member. Seems like they have DMs disabled.")
         else:
             await ctx.respond(f"Could not find member with ID: {member_id}")
 
