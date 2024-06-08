@@ -84,7 +84,8 @@ async def viewprofile(ctx, member: discord.Member = None):
         embed.add_field(name="Available", value="Yes" if status else "No", inline=False)
         activityrank = db.messages.find_one({'user_id': member.id, 'guild_id': ctx.guild.id})
         if activityrank:
-            embed.add_field(name="Message Count", value=activityrank['message_count'], inline=False)
+            # activity rank is the rank of the user in the leaderboard
+            activityrank = db.messages.count_documents({'message_count': {'$gt': activityrank['message_count'], 'guild_id': ctx.guild.id}}) + 1
         await ctx.respond(embed=embed)
     else:
         embed = Embed(title="Profile Not Found", description="The profile you are looking for does not exist.", color=discord.Color.red())
