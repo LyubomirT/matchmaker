@@ -29,12 +29,14 @@ This project is licensed under the GNU General Public License. For more details,
 
 ## Contributing
 
-Contributions are welcome! Please read the [`LICENSE`](LICENSE) for details on our code of conduct, and the process for submitting pull requests.
+Contributions are welcome! Please read the [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) and [`CONTRIBUTING.md`](CONTRIBUTING.md) files for more information on how to contribute.
 
 ## Contact
 
-For more information on how to contact the author, please read the [`LICENSE`](LICENSE) file.
+For more information on how to contact the author, please read the [`CONTACT.md`](CONTACT.md) file.
 
 ## Acknowledgements
 
 This bot uses the Py-Cord library to interact with the Discord API. For more information, visit the [Py-Cord GitHub repository](https://github.com/Pycord-Development/pycord).
+
+(Created and maintained by The Orange Squad / Lyubomir Ternavskiy (LyubomirT))
