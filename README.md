@@ -2,7 +2,7 @@
 
 # 🤝 Orangery Matchmaker
 
-Welcome to Orangery Matchmaker! We're a Discord bot dedicated to helping collaborators find each other and team up on projects. Our bot allows users to create profiles, specify their skills, and join or create lobbies for collaborative projects.
+Welcome to Orangery Matchmaker! It's a Discord bot dedicated to helping collaborators find each other and team up on projects. Our bot allows users to create profiles, specify their skills, and join or create lobbies for collaborative projects.
 
 ## ✨ Features
 
