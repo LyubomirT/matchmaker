@@ -8,6 +8,7 @@ import os
 from modals import ProfileModal, LobbyModal, JobUploadModal, JobRemoveModal, ConfirmKickEveryoneModal
 from database import db
 import asyncio
+from autocompletes import job_autocomplete, myLobbies_autocomplete
 
 dotenv.load_dotenv()
 
@@ -17,16 +18,6 @@ intents.typing = False
 intents.presences = True
 intents.members = True
 bot = commands.Bot(command_prefix='/', intents=intents)
-
-
-
-async def job_autocomplete(ctx: discord.AutocompleteContext):
-    jobs = db.jobs.find({'guild_id': ctx.interaction.guild.id})
-    return [job['name'] for job in jobs if 'name' in job and len(job['name']) <= 50]
-
-async def myLobbies_autocomplete(ctx: discord.AutocompleteContext):
-    lobbies = db.lobbies.find({'guild_id': ctx.interaction.guild.id})
-    return [lobby['name'] for lobby in lobbies if 'name' in lobby and len(lobby['name']) <= 50]
 
 @bot.slash_command(name="profile", description="Setup your profile")
 async def profile(ctx):
