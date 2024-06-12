@@ -26,6 +26,26 @@ async def help(ctx):
     embed = Embed(title="Matchmaker Bot Help", description=helpstr, color=discord.Color.blue())
     await ctx.respond(embed=embed)
 
+@bot.slash_command(name="support", description="Places to get assistance with the bot")
+async def support(ctx):
+    supportString = """
+    ## Support links
+
+    ### Email the developer
+    -> `ternavski103@gmail.com`
+
+    ### Join the support discord
+    -> https://discord.gg/XkjPDcSfNz
+
+    ### Documentation
+    -> https://github.com/LyubomirT/matchmaker
+
+    ### Invite the bot 
+    -> https://discord.com/oauth2/authorize?client_id=1246720080579133471&permissions=8&integration_type=0&scope=bot
+    """
+    embed = Embed(title="Matchmaker Bot Support", description=supportString, color=discord.Color.blue())
+    await ctx.respond(embed=embed)
+
 @bot.slash_command(name="profile", description="Setup your profile")
 async def profile(ctx):
     await ctx.send_modal(ProfileModal())
