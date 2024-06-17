@@ -40,4 +40,4 @@ For more information on how to contact the author, please read the [`CONTACT.md`
 
 This bot uses the Py-Cord library to interact with the Discord API. For more information, visit the [Py-Cord GitHub repository](https://github.com/Pycord-Development/pycord).
 
-(Created and maintained by The Orange Squad / Lyubomir Ternavskiy (LyubomirT))
+(Created and maintained by The Orange Squad / Lyubomir Ternavskiy (LyubomirT) / Contributors)
