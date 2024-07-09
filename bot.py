@@ -97,7 +97,7 @@ async def viewprofile(ctx, member: discord.Member = None):
             {'$set': {'jobs': valid_jobs}}
         )
         jobs = ", ".join(valid_jobs)
-        embed = Embed(title=f"{profile['username']}'s Profile", color=discord.Color.blue())
+        embed = Embed(title=f"{profile['username']}'s Profile ({member.name})", color=discord.Color.blue())
         embed.set_thumbnail(url=member.avatar)
         embed.add_field(name="Call Me", value=profile['call_me'], inline=False)
         embed.add_field(name="Bio", value=profile['bio'], inline=False)
