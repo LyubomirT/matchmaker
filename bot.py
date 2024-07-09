@@ -575,4 +575,26 @@ async def activityleaderboard(ctx):
     embed = Embed(title="Activity Leaderboard", description="\n".join(leaderboard), color=discord.Color.blue())
     await ctx.respond(embed=embed)
 
+@bot.slash_command(name="clearmessages", description="Clear the message count for a user")
+async def clearmessages(ctx, member: discord.Member):
+    if ctx.author.id != ctx.guild.owner_id:
+        embed = Embed(title="Permission Denied", description="You do not have permission to clear message counts (only the server owner can).", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+
+    db.messages.delete_one({'user_id': member.id, 'guild_id': ctx.guild.id})
+    embed = Embed(title="Message Count Cleared", description=f"The message count for {member.mention} has been cleared.", color=discord.Color.red())
+    await ctx.respond(embed=embed)
+
+@bot.slash_command(name="clearallmessages", description="Clear the message count for all users")
+async def clearallmessages(ctx):
+    if ctx.author.id != ctx.guild.owner_id:
+        embed = Embed(title="Permission Denied", description="You do not have permission to clear message counts (only the server owner can).", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+
+    db.messages.delete_many({'guild_id': ctx.guild.id})
+    embed = Embed(title="Message Counts Cleared", description="All message counts have been cleared.", color=discord.Color.red())
+    await ctx.respond(embed=embed)
+
 bot.run(os.getenv('DISCORD_TOKEN'))
