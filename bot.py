@@ -6,6 +6,7 @@ import random
 import dotenv
 import os
 from modals import ProfileModal, LobbyModal, JobUploadModal, JobRemoveModal, ConfirmKickEveryoneModal
+from views import ProfileView
 from database import db
 import asyncio
 from autocompletes import job_autocomplete, myLobbies_autocomplete
@@ -105,7 +106,7 @@ async def viewprofile(ctx, member: discord.Member = None):
         activityrank = db.messages.find_one({'user_id': member.id, 'guild_id': ctx.guild.id})
         if activityrank:
             embed.add_field(name="Message Count", value=activityrank['message_count'], inline=False)
-        await ctx.respond(embed=embed)
+        await ctx.respond(embed=embed, view=ProfileView())
     else:
         embed = Embed(title="Profile Not Found", description="The profile you are looking for does not exist.", color=discord.Color.red())
         await ctx.respond(embed=embed)
