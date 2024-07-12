@@ -6,7 +6,7 @@ import random
 import dotenv
 import os
 from modals import ProfileModal, LobbyModal, JobUploadModal, JobRemoveModal, ConfirmKickEveryoneModal
-from views import ProfileView
+from views import ProfileView, JobsPaginatedView
 from database import db
 import asyncio
 from autocompletes import job_autocomplete, myLobbies_autocomplete
@@ -370,12 +370,11 @@ async def viewjobs(ctx):
         return
 
     job_names = [job['name'] for job in jobs if 'name' in job]
-    chunk_size = 1000
+    chunk_size = 50
     chunks = [job_names[i:i+chunk_size] for i in range(0, len(job_names), chunk_size)]
 
-    for chunk in chunks:
-        embed = Embed(title="Available Jobs", description="\n".join(chunk), color=discord.Color.blue())
-        await ctx.respond(embed=embed)
+    # use the paginated view to display the jobs
+    await ctx.respond(f"Displaying {len(job_names)} jobs", view=JobsPaginatedView(chunks))
 
 @bot.slash_command(name="mylobbies", description="View all your current lobbies")
 async def viewlobbystatus(ctx):
