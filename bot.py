@@ -388,7 +388,7 @@ async def searchjobs(ctx, job: Option(str, "Enter the job name")):
     job_names = [job['name'] for job in jobs if 'name' in job]
     chunk_size = 50
     chunks = [job_names[i:i+chunk_size] for i in range(0, len(job_names), chunk_size)]
-    await ctx.respond(f"Displaying {len(job_names)} jobs", view=JobsPaginatedView(chunks))
+    await ctx.respond(f"Displaying {len(job_names)} found jobs", view=JobsPaginatedView(chunks))
 
 @bot.slash_command(name="mylobbies", description="View all your current lobbies")
 async def viewlobbystatus(ctx):
