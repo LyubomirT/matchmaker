@@ -4,7 +4,7 @@ from discord import Embed
 from database import db
 
 class ProfileModal(ui.Modal):
-    def __init__(self):
+    def __init__(self, runnerguild, runnerid):
         super().__init__(title="Profile Setup")
 
         self.add_item(ui.InputText(label="Username", max_length=50))

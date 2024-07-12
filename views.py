@@ -11,7 +11,7 @@ class ProfileView(ui.View):
         self.add_item(ToggleAvailabilityButton(owner_id=owner_id))
     
     async def on_timeout(self):
-        await self.message.reply("Something went wrong. Please try again.", ephemeral=True)
+        await self.message.reply("Something went wrong. Please try again.")
 
 
 class ToggleAvailabilityButton(ui.Button):

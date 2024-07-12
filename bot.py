@@ -49,7 +49,7 @@ async def support(ctx):
 
 @bot.slash_command(name="profile", description="Setup your profile")
 async def profile(ctx):
-    await ctx.send_modal(ProfileModal())
+    await ctx.send_modal(ProfileModal(runnerguild=ctx.guild.id, runnerid=ctx.author.id))
 
 @bot.slash_command(name="setjobs", description="Add jobs to your profile")
 async def setjobs(ctx, job: Option(str, "Select a job", autocomplete=discord.utils.basic_autocomplete(job_autocomplete))):
