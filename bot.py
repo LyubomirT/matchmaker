@@ -36,7 +36,7 @@ async def support(ctx):
     -> `ternavski103@gmail.com`
 
     ### Join the support discord
-    -> https://discord.gg/XkjPDcSfNz
+    -> https://discord.gg/2j9s6a42qx
 
     ### Documentation
     -> https://github.com/LyubomirT/matchmaker
