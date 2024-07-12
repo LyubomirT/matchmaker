@@ -10,7 +10,7 @@ class ProfileView(ui.View):
         self.add_item(ToggleAvailabilityButton())
     
     async def on_timeout(self):
-        await self.message.edit(view=None)
+        pass
 
 
 class ToggleAvailabilityButton(ui.Button):
