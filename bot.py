@@ -376,6 +376,20 @@ async def viewjobs(ctx):
     # use the paginated view to display the jobs
     await ctx.respond(f"Displaying {len(job_names)} jobs", view=JobsPaginatedView(chunks))
 
+@bot.slash_command(name="searchjobs", description="Search for a job in the server by name")
+async def searchjobs(ctx, job: Option(str, "Enter the job name")):
+    # find similar jobs and list them, also in a paginated view (although highlight the query in the job names using **____**)
+    jobs = list(db.jobs.find({'name': {'$regex': job, '$options': 'i'}, 'guild_id': ctx.guild.id}))
+    if not jobs:
+        embed = Embed(title="No Jobs Found", description="No jobs found with the specified name.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+
+    job_names = [job['name'] for job in jobs if 'name' in job]
+    chunk_size = 50
+    chunks = [job_names[i:i+chunk_size] for i in range(0, len(job_names), chunk_size)]
+    await ctx.respond(f"Displaying {len(job_names)} jobs", view=JobsPaginatedView(chunks))
+
 @bot.slash_command(name="mylobbies", description="View all your current lobbies")
 async def viewlobbystatus(ctx):
     lobbies = list(db.lobbies.find({'$or': [{'members': ctx.author.id}, {'creator_id': ctx.author.id}], 'guild_id': ctx.guild.id}))

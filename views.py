@@ -43,7 +43,7 @@ class JobsPaginatedView(ui.View):
         jobs = self.jobs[self.current_page]
         embed = discord.Embed(title="Jobs", description="Here are the jobs available for you to apply to on this server.", color=discord.Color.blurple())
         for job in jobs:
-            embed.description += f"\n**{job}**"
+            embed.description += f"\n- {job}"
         embed.set_footer(text=f"Page {self.current_page + 1}/{len(self.jobs)}")
         await interaction.response.edit_message(embed=embed, view=self)
 
