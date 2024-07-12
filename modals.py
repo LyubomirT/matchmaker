@@ -5,7 +5,7 @@ from database import db
 
 class ProfileModal(ui.Modal):
     def __init__(self, runnerguild, runnerid):
-        super().__init__(title="Profile Setup")
+        super().__init__(title="Profile Setup", timeout=1800)
 
         self.runnerguild = runnerguild
         self.runnerid = runnerid

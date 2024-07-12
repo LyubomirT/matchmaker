@@ -5,7 +5,7 @@ from database import db
 
 class ProfileView(ui.View):
     def __init__(self, owner_id):
-        super().__init__()
+        super().__init__(timeout=1800)
         self.owner_id = owner_id
 
         self.add_item(ToggleAvailabilityButton(owner_id=owner_id))
