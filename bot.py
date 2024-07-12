@@ -106,7 +106,7 @@ async def viewprofile(ctx, member: discord.Member = None):
         activityrank = db.messages.find_one({'user_id': member.id, 'guild_id': ctx.guild.id})
         if activityrank:
             embed.add_field(name="Message Count", value=activityrank['message_count'], inline=False)
-        await ctx.respond(embed=embed, view=ProfileView())
+        await ctx.respond(embed=embed, view=ProfileView(owner_id=member.id))
     else:
         embed = Embed(title="Profile Not Found", description="The profile you are looking for does not exist.", color=discord.Color.red())
         await ctx.respond(embed=embed)
