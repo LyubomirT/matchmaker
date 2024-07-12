@@ -7,9 +7,22 @@ class ProfileModal(ui.Modal):
     def __init__(self, runnerguild, runnerid):
         super().__init__(title="Profile Setup")
 
-        self.add_item(ui.InputText(label="Username", max_length=50))
-        self.add_item(ui.InputText(label="Call Me Name", max_length=50))
-        self.add_item(ui.InputText(label="Short Bio", style=discord.InputTextStyle.paragraph, max_length=512))
+        self.runnerguild = runnerguild
+        self.runnerid = runnerid
+
+        user_profile = db.profiles.find_one({'user_id': runnerid, 'guild_id': runnerguild})
+        if user_profile:
+            username = user_profile.get('username', '')
+            call_me = user_profile.get('call_me', '')
+            bio = user_profile.get('bio', '')
+        else:
+            username = ''
+            call_me = ''
+            bio = ''
+
+        self.add_item(ui.InputText(label="Username", max_length=50, value=username))
+        self.add_item(ui.InputText(label="Call Me Name", max_length=50, value=call_me))
+        self.add_item(ui.InputText(label="Short Bio", style=discord.InputTextStyle.paragraph, max_length=512, value=bio))
 
     async def callback(self, interaction: discord.Interaction):
         username = self.children[0].value
