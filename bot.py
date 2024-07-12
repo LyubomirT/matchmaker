@@ -389,7 +389,7 @@ async def searchjobs(ctx, job: Option(str, "Enter the job name")):
     job_names = [job['name'] for job in jobs if 'name' in job]
     chunk_size = 50
     chunks = [job_names[i:i + chunk_size] for i in range(0, len(job_names), chunk_size)]
-    chunks = [[name.replace(job, f"**{job}**", flags=re.IGNORECASE) for name in chunk] for chunk in chunks]
+    chunks = [[re.sub(f'({job})', r'**__\1__**', job_name, flags=re.IGNORECASE) for job_name in chunk] for chunk in chunks]
     await ctx.respond(f"Displaying {len(job_names)} found jobs", view=JobsPaginatedView(chunks))
 
 
