@@ -11,6 +11,7 @@ from database import db
 import asyncio
 from autocompletes import job_autocomplete, myLobbies_autocomplete
 from helpfile import helpstr
+import re
 
 
 dotenv.load_dotenv()
@@ -388,8 +389,9 @@ async def searchjobs(ctx, job: Option(str, "Enter the job name")):
     job_names = [job['name'] for job in jobs if 'name' in job]
     chunk_size = 50
     chunks = [job_names[i:i + chunk_size] for i in range(0, len(job_names), chunk_size)]
-    chunks = [[name.replace(job, f"**{job}**") for name in chunk] for chunk in chunks]
+    chunks = [[name.replace(job, f"**{job}**", flags=re.IGNORECASE) for name in chunk] for chunk in chunks]
     await ctx.respond(f"Displaying {len(job_names)} found jobs", view=JobsPaginatedView(chunks))
+
 
 
 @bot.slash_command(name="mylobbies", description="View all your current lobbies")
