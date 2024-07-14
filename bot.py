@@ -619,4 +619,46 @@ async def clearallmessages(ctx):
 async def deleteprofile(ctx):
     await ctx.send_modal(ConfirmDeleteProfileModal())
 
+@bot.slash_command(name="import", description="Import something from another server")
+async def importdata(ctx, what: Option(str, "What to import", choices=["joblist", "profile"]), server: Option(str, "Server ID")):
+    # you must be the server owner to import jobs (but not profiles)
+    if what == "joblist" and ctx.author.id != ctx.guild.owner_id:
+        embed = Embed(title="Permission Denied", description="You do not have permission to import jobs (only the server owner can).", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+
+    # get the server
+    try:
+        server = await bot.fetch_guild(server)
+    except:
+        embed = Embed(title="Server Not Found", description="The server you are trying to import from does not exist or I do not have access to it.", color=discord.Color.red())
+        await ctx.respond(embed=embed)
+        return
+    
+    if what == "joblist":
+        jobs = list(db.jobs.find({'guild_id': server.id}))
+        # copy the jobs to the current server
+        for job in jobs:
+            db.jobs.update_one(
+                {'name': job['name'], 'guild_id': ctx.guild.id},
+                {'$set': {'name': job['name'], 'guild_id': ctx.guild.id}},
+                upsert=True
+            )
+        embed = Embed(title="Jobs Imported", description="The jobs have been imported from the specified server.", color=discord.Color.green())
+        await ctx.respond(embed=embed)
+    elif what == "profile":
+        # import the profile of the current user
+        profile = db.profiles.find_one({'user_id': ctx.author.id, 'guild_id': server.id})
+        if profile:
+            db.profiles.update_one(
+                {'user_id': ctx.author.id, 'guild_id': ctx.guild.id},
+                {'$set': profile},
+                upsert=True
+            )
+            embed = Embed(title="Profile Imported", description="Your profile has been imported from the specified server.", color=discord.Color.green())
+            await ctx.respond(embed=embed)
+        else:
+            embed = Embed(title="Profile Not Found", description="The profile you are trying to import does not exist in the specified server.", color=discord.Color.red())
+            await ctx.respond(embed=embed)
+
 bot.run(os.getenv('DISCORD_TOKEN'))
