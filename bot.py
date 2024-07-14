@@ -5,7 +5,7 @@ from pymongo import MongoClient
 import random
 import dotenv
 import os
-from modals import ProfileModal, LobbyModal, JobUploadModal, JobRemoveModal, ConfirmKickEveryoneModal
+from modals import ProfileModal, LobbyModal, JobUploadModal, JobRemoveModal, ConfirmKickEveryoneModal, ConfirmDeleteProfileModal
 from views import ProfileView, JobsPaginatedView
 from database import db
 import asyncio
@@ -614,5 +614,9 @@ async def clearallmessages(ctx):
     db.messages.delete_many({'guild_id': ctx.guild.id})
     embed = Embed(title="Message Counts Cleared", description="All message counts have been cleared.", color=discord.Color.red())
     await ctx.respond(embed=embed)
+
+@bot.slash_command(name="deleteprofile", description="Delete your profile")
+async def deleteprofile(ctx):
+    await ctx.send_modal(ConfirmDeleteProfileModal())
 
 bot.run(os.getenv('DISCORD_TOKEN'))

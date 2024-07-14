@@ -112,3 +112,16 @@ class ConfirmKickEveryoneModal(ui.Modal):
         db.lobbies.update_one({'_id': lobby_id}, {'$set': {'members': []}})
         embed = Embed(title="Kicked Everyone", description="Everyone has been kicked from the lobby.", color=discord.Color.red())
         await interaction.response.send_message(embed=embed, ephemeral=True)
+
+class ConfirmDeleteProfileModal(ui.Modal):
+    def __init__(self, id=None):
+        super().__init__(title="Are you sure? This action is irreversible.")
+        self.id = id
+
+        self.add_item(ui.InputText(label="Dummy", placeholder="This is a dummy input to make the modal work.", required=False))
+
+    async def callback(self, interaction: discord.Interaction):
+        profile_id = self.id
+        db.profiles.delete_one({'_id': profile_id})
+        embed = Embed(title="Profile Deleted", description="Your profile has been successfully deleted.", color=discord.Color.red())
+        await interaction.response.send_message(embed=embed, ephemeral=True)
