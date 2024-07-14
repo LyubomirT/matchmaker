@@ -650,13 +650,23 @@ async def importdata(ctx, what: Option(str, "What to import", choices=["joblist"
         # import the profile of the current user
         profile = db.profiles.find_one({'user_id': ctx.author.id, 'guild_id': server.id})
         if profile:
-            db.profiles.update_one(
-                {'user_id': ctx.author.id, 'guild_id': ctx.guild.id},
-                {'$set': profile},
-                upsert=True
-            )
-            embed = Embed(title="Profile Imported", description="Your profile has been imported from the specified server.", color=discord.Color.green())
-            await ctx.respond(embed=embed)
+            # Remove jobs that don't exist on the current server
+            removed_jobs = []
+            for job in profile['jobs']:
+                if db.jobs.find_one({'name': job['name'], 'guild_id': ctx.guild.id}) is None:
+                    removed_jobs.append(job['name'])
+                    profile['jobs'].remove(job)
+                    db.profiles.update_one(
+                        {'user_id': ctx.author.id, 'guild_id': ctx.guild.id},
+                        {'$set': profile},
+                        upsert=True
+                    )
+            if removed_jobs:
+                removed_jobs_str = ', '.join(removed_jobs)
+                embed = Embed(title="Profile Imported", description=f"Your profile has been imported from the specified server. Removed jobs: {removed_jobs_str}", color=discord.Color.green())
+            else:
+                embed = Embed(title="Profile Imported", description="Your profile has been imported from the specified server.", color=discord.Color.green())
+                await ctx.respond(embed=embed)
         else:
             embed = Embed(title="Profile Not Found", description="The profile you are trying to import does not exist in the specified server.", color=discord.Color.red())
             await ctx.respond(embed=embed)
