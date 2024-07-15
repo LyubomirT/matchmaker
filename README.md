@@ -17,6 +17,10 @@ Welcome to Orangery Matchmaker! It's a Discord bot dedicated to helping collabor
 
 You can invite the bot to your server using [this link](https://discord.com/oauth2/authorize?client_id=1246720080579133471&permissions=8&integration_type=0&scope=bot).
 
+## 🔶 Our Headquarters
+
+Join our Discord server to get help, report bugs, and suggest new features: [Orangery Matchmaker](https://discord.gg/2j9s6a42qx).
+
 ## 🛠️ Setup
 
 1. Clone the repository.
